@@ -17,7 +17,7 @@ A modern, interactive web-based Tic Tac Toe game built with Python Flask and fea
 
 - Backend: Python Flask
 - Frontend: HTML, CSS, JavaScript
-- Database: SQLite
+- Database: MySQL
 - UI Framework: Custom CSS with modern design principles
 
 ## Installation
