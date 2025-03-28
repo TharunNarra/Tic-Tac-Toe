@@ -12,7 +12,7 @@ app.secret_key = '8gdQTbFaIK'  # Change this to a secure secret key
 db_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'Tharun@2003',
+    'password': 'MYSql_Password',#place your password
     'database': 'game_db'
 }
 
