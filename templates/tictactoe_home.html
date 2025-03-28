@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Tic Tac Toe Games{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 2rem auto;">
+    <div class="card">
+        <h1 style="margin-bottom: 1.5rem;">Tic Tac Toe</h1>
+        
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+            <form action="{{ url_for('tictactoe_new') }}" method="POST" style="flex: 1;">
+                <input type="hidden" name="singleplayer" value="false">
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Create Multiplayer Game</button>
+            </form>
+            <form action="{{ url_for('tictactoe_new') }}" method="POST" style="flex: 1;">
+                <input type="hidden" name="singleplayer" value="true">
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Play vs Computer</button>
+            </form>
+        </div>
+        
+        <h2 style="margin-bottom: 1rem;">Active Games</h2>
+        {% if active_games %}
+            <div style="margin-bottom: 2rem;">
+                {% for game in active_games %}
+                    <div style="padding: 1rem; border: 1px solid var(--border); border-radius: 4px; margin-bottom: 0.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                {% if game.is_singleplayer %}
+                                    {{ game.player_x_name }} vs Computer
+                                {% else %}
+                                    {{ game.player_x_name }} vs 
+                                    {% if game.player_o_name %}
+                                        {{ game.player_o_name }}
+                                    {% else %}
+                                        Waiting for player...
+                                    {% endif %}
+                                {% endif %}
+                                (Status: {{ game.status }})
+                            </div>
+                            <a href="{{ url_for('tictactoe_play', game_id=game.id) }}" class="btn" style="background-color: var(--primary); color: white;">Play</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p style="margin-bottom: 2rem;">No active games.</p>
+        {% endif %}
+        
+        {% if available_games %}
+            <h2 style="margin-bottom: 1rem;">Available Games</h2>
+            <div style="margin-bottom: 2rem;">
+                {% for game in available_games %}
+                    <div style="padding: 1rem; border: 1px solid var(--border); border-radius: 4px; margin-bottom: 0.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>{{ game.player_x_name }} is waiting for opponent</div>
+                            <form action="{{ url_for('tictactoe_join', game_id=game.id) }}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn" style="background-color: var(--primary); color: white;">Join</button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <a href="{{ url_for('dashboard') }}" class="btn" style="background-color: var(--gray); color: white;">Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}

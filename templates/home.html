@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    .auth-container {
+        max-width: 400px;
+        margin: 4rem auto;
+        text-align: center;
+    }
+    
+    .auth-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .auth-btn {
+        flex: 1;
+        padding: 1rem;
+        border-radius: 8px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.4s ease;
+    }
+    
+    .btn-login {
+        background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+        color: white;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+    }
+    
+    .btn-register {
+        background: var(--gray);
+        color: white;
+    }
+    
+    .auth-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    {% if 'user_id' not in session %}
+        <div class="auth-buttons">
+            <a href="{{ url_for('login') }}" class="auth-btn btn-login">Login</a>
+            <a href="{{ url_for('register') }}" class="auth-btn btn-register">Register</a>
+        </div>
+    {% else %}
+        <a href="{{ url_for('dashboard') }}" class="auth-btn btn-login">Go to Dashboard</a>
+    {% endif %}
+</div>
+{% endblock %}

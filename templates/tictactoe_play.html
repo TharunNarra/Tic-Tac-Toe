@@ -1,0 +1,344 @@
+{% extends "base.html" %}
+
+{% block title %}Tic Tac Toe Game{% endblock %}
+
+{% block extra_css %}
+<style>
+    .board {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(80px, 100px));
+        grid-template-rows: repeat(3, minmax(80px, 100px));
+        gap: 12px;
+        margin: 20px auto;
+        padding: 15px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        max-width: 350px;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+    
+    .cell {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 48px;
+        font-weight: bold;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .cell.x, .cell.o {
+        transform: scale(0.95);
+    }
+    
+    .cell.x { 
+        color: var(--primary);
+        background: linear-gradient(135deg, rgba(0, 123, 255, 0.1), rgba(0, 123, 255, 0.05));
+    }
+    .cell.o { 
+        color: var(--danger);
+        background: linear-gradient(135deg, rgba(220, 53, 69, 0.1), rgba(220, 53, 69, 0.05));
+    }
+    
+    .cell:hover:not(.disabled) {
+        background: rgba(255, 255, 255, 1);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    }
+    
+    .cell.disabled {
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+    
+    .game-info {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 1.5rem;
+        border-radius: 16px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+    
+    .status {
+        padding: 1.5rem;
+        border-radius: 16px;
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+        text-align: center;
+        transition: all 0.4s ease;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(5px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+    
+    .btn {
+        transition: all 0.4s ease;
+        border: none;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+    }
+    
+    .btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+    
+    @keyframes pop {
+        0% { transform: scale(1); opacity: 0.5; }
+        50% { transform: scale(1.2); opacity: 1; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    
+    @keyframes winner {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    .cell.x, .cell.o {
+        animation: pop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    
+    .winner {
+        background: linear-gradient(270deg, #00ff87, #60efff);
+        background-size: 200% 200%;
+        animation: winner 3s ease infinite;
+        color: white !important;
+    }
+    
+    @media (max-width: 500px) {
+        .board {
+            grid-template-columns: repeat(3, minmax(60px, 80px));
+            grid-template-rows: repeat(3, minmax(60px, 80px));
+            gap: 8px;
+            padding: 10px;
+        }
+        
+        .cell {
+            font-size: 36px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 2rem auto;">
+    <div class="card">
+        <h1 style="margin-bottom: 1rem;">Tic Tac Toe Game</h1>
+        
+        <div class="game-info">
+            <p>You are: <strong class="{% if player_symbol == 'X' %}x{% else %}o{% endif %}">{{ player_symbol }}</strong></p>
+            <p>Opponent: 
+                {% if game.is_singleplayer %}
+                    Computer
+                {% else %}
+                    {% if player_symbol == 'X' %}
+                        {% if game.player_o_name %}
+                            {{ game.player_o_name }} (O)
+                        {% else %}
+                            Waiting for opponent...
+                        {% endif %}
+                    {% else %}
+                        {{ game.player_x_name }} (X)
+                    {% endif %}
+                {% endif %}
+            </p>
+        </div>
+        
+        <div class="status" id="status">
+            {% if game.status == 'in_progress' and is_my_turn %}
+                Your turn!
+            {% elif game.status == 'in_progress' %}
+                {% if game.is_singleplayer %}
+                    Computer is thinking...
+                {% else %}
+                    Waiting for opponent...
+                {% endif %}
+            {% elif game.status == 'completed' %}
+                Game over!
+                {% if game.winner %}
+                    {% if game.is_singleplayer and game.winner == 0 %}
+                        Computer wins!
+                    {% else %}
+                        {{ game.winner_name }} wins!
+                    {% endif %}
+                {% else %}
+                    It's a tie!
+                {% endif %}
+            {% endif %}
+        </div>
+        
+        <div class="board" id="board">
+            {% for i in range(9) %}
+                <div class="cell" data-position="{{ i }}">
+                    {{ game.board_state[i] if game.board_state[i] != ' ' else '' }}
+                </div>
+            {% endfor %}
+        </div>
+        
+        {% if game.status == 'completed' %}
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <form action="{{ url_for('tictactoe_new') }}" method="POST">
+                    <input type="hidden" name="singleplayer" value="{{ 'true' if game.is_singleplayer else 'false' }}">
+                    <button type="submit" class="btn btn-primary">New Game</button>
+                </form>
+                <a href="{{ url_for('tictactoe_home') }}" class="btn" style="background-color: var(--gray); color: white;">Back to Games</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+        const gameId = {{ game.id }};
+        const playerSymbol = '{{ player_symbol }}';
+        const isSingleplayer = {{ 'true' if game.is_singleplayer else 'false' }};
+        let gameOver = {{ 'true' if game.status == 'completed' else 'false' }};
+        
+        function updateBoardState(board) {
+            document.querySelectorAll('.cell').forEach((cell, index) => {
+                cell.textContent = board[index] !== ' ' ? board[index] : '';
+                cell.className = 'cell';
+                if (board[index] === 'X') cell.classList.add('x');
+                if (board[index] === 'O') cell.classList.add('o');
+            });
+        }
+        
+        function updateGameState(data) {
+            updateBoardState(data.board);
+            gameOver = data.game_over;
+            
+            const statusElement = document.getElementById('status');
+            const cells = document.querySelectorAll('.cell');
+            
+            if (data.game_over) {
+                statusElement.textContent = data.winner === 'Tie' 
+                    ? "Game over! It's a tie!" 
+                    : data.winner === playerSymbol 
+                        ? "Game over! You won!" 
+                        : "Game over! Computer wins!";
+                
+                statusElement.style.backgroundColor = data.winner === 'Tie' 
+                    ? '#fff3cd' 
+                    : data.winner === playerSymbol 
+                        ? '#d4edda' 
+                        : '#f8d7da';
+                
+                cells.forEach(cell => {
+                    cell.classList.add('disabled');
+                    cell.style.cursor = 'default';
+                });
+            } else {
+                statusElement.style.backgroundColor = '#d1ecf1';
+                
+                if (data.is_my_turn) {
+                    statusElement.textContent = "Your turn!";
+                    cells.forEach(cell => {
+                        cell.style.cursor = 'pointer';
+                        cell.style.pointerEvents = 'auto';
+                    });
+                } else {
+                    statusElement.textContent = isSingleplayer 
+                        ? "Computer is thinking..." 
+                        : "Waiting for opponent...";
+                    
+                    cells.forEach(cell => {
+                        cell.style.pointerEvents = 'none';
+                    });
+                    
+                    // For singleplayer, check for computer's move
+                    if (isSingleplayer) {
+                        setTimeout(checkForGameState, 1000);
+                    }
+                }
+            }
+        }
+        
+        function makeMove(position) {
+            if (gameOver) return;
+            
+            // Disable board during move processing
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.style.pointerEvents = 'none';
+            });
+            
+            fetch("{{ url_for('tictactoe_move', game_id=game.id) }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `position=${position}`
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    // Re-enable board if error occurs
+                    document.querySelectorAll('.cell').forEach(cell => {
+                        cell.style.pointerEvents = 'auto';
+                    });
+                } else {
+                    updateGameState(data);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Re-enable board if error occurs
+                document.querySelectorAll('.cell').forEach(cell => {
+                    cell.style.pointerEvents = 'auto';
+                });
+            });
+        }
+        
+        function checkForGameState() {
+            if (gameOver) return;
+            
+            fetch("{{ url_for('tictactoe_state', game_id=game.id) }}")
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    console.error(data.error);
+                } else {
+                    updateGameState(data);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+        
+        // Initialize game board
+        document.addEventListener('DOMContentLoaded', () => {
+            updateBoardState('{{ game.board_state }}'.split(''));
+            
+            // Set up click handlers
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.addEventListener('click', (e) => {
+                    if (!gameOver && !e.target.classList.contains('disabled')) {
+                        makeMove(parseInt(e.target.dataset.position));
+                    }
+                });
+            });
+            
+            // If it's computer's turn initially, start checking
+            {% if not is_my_turn and game.status == 'in_progress' and game.is_singleplayer %}
+                setTimeout(checkForGameState, 1000);
+            {% endif %}
+        });
+    </script>
+{% endblock %}

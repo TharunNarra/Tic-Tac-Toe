@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        animation: fadeIn 0.6s ease-out;
+    }
+
+    .welcome-card {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        transition: all 0.4s ease;
+    }
+
+    .welcome-title {
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .action-btn {
+        flex: 1;
+        padding: 1rem;
+        border-radius: 8px;
+        font-weight: 500;
+        text-align: center;
+        transition: all 0.4s ease;
+        text-decoration: none;
+    }
+
+    .btn-play {
+        background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+        color: white;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+    }
+
+    .btn-logout {
+        background: var(--gray);
+        color: white;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .scores-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .scores-table th {
+        background: rgba(79, 70, 229, 0.1);
+        color: var(--primary);
+        font-weight: 600;
+        padding: 1rem;
+        text-align: left;
+    }
+
+    .scores-table td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .scores-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .scores-table tr:hover {
+        background: rgba(79, 70, 229, 0.05);
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="welcome-card">
+        <h1 class="welcome-title">Welcome, {{ username }}!</h1>
+        
+        <div class="action-buttons">
+            <a href="{{ url_for('tictactoe_home') }}" class="action-btn btn-play">Play Tic Tac Toe</a>
+            <a href="{{ url_for('logout') }}" class="action-btn btn-logout">Logout</a>
+        </div>
+        
+        <h2>Your Recent Scores</h2>
+        
+        {% if scores %}
+            <table class="scores-table">
+                <thead>
+                    <tr>
+                        <th>Game</th>
+                        <th>Score</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for score in scores %}
+                        <tr>
+                            <td>{{ score.game_type }}</td>
+                            <td>{{ score.score }}</td>
+                            <td>{{ score.date }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No scores yet. Start playing to see your scores here!</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
