@@ -12,7 +12,7 @@ app.secret_key = '8gdQTbFaIK'  # Change this to a secure secret key
 db_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'MYSql_Password',#place your password
+    'password': 'MySQL_Password',#place your password
     'database': 'game_db'
 }
 
@@ -187,13 +187,13 @@ def tictactoe_home():
         ''', (session['user_id'],))
         available_games = cursor.fetchall()
         
-        # Get completed games
+        # Get completed games (MySQL version)
         cursor.execute('''
             SELECT g.id, 
                    u1.username as player_x_name, 
                    u2.username as player_o_name,
                    u3.username as winner_name,
-                   strftime('%Y-%m-%d %H:%M', g.updated_at) as date,
+                   DATE_FORMAT(g.updated_at, '%%Y-%%m-%%d %%H:%%i') as date,
                    g.is_singleplayer
             FROM tictactoe_games g
             LEFT JOIN users u1 ON g.player_x = u1.id
@@ -211,7 +211,8 @@ def tictactoe_home():
                              available_games=available_games,
                              completed_games=completed_games)
     except Exception as e:
-        flash('Error loading games')
+        flash(f'Error loading games: {str(e)}')  # Show actual error
+        app.logger.error(f"Error in tictactoe_home: {str(e)}")  # Log to console
         return redirect(url_for('dashboard'))
     finally:
         cursor.close()
