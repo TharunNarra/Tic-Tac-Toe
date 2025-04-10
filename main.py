@@ -12,7 +12,7 @@ app.secret_key = '8gdQTbFaIK'  # Change this to a secure secret key
 db_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'Tharun@2003',#place your password
+    'password': 'Tharun@2003',
     'database': 'game_db'
 }
 
@@ -484,5 +484,4 @@ def tictactoe_state(game_id):
         conn.close()
 
 if __name__ == '__main__':
-    port = int("PORT", 5000)
-    app.run(debug=True, host="0.0.0.0", port=port)
+    app.run(debug=True)
