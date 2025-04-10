@@ -484,4 +484,5 @@ def tictactoe_state(game_id):
         conn.close()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int("PORT", 5000)
+    app.run(debug=True, host="0.0.0.0", port=port)
